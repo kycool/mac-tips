@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import copy
+
 from django.http.response import HttpResponseBase
 
 from rest_framework.response import Response
 from rest_framework import viewsets
+from rest_framework.permissions import AllowAny
+
+from apiservice.thirdcommon.permission import wrap_permission, IsVbAdminUser
 
 
 class CommonViewMixin(object):
@@ -115,3 +119,37 @@ class CommonViewMixin(object):
 class CommonViewSet(CommonViewMixin, viewsets.ModelViewSet):
     """Common ViewSet"""
     pass
+
+
+class GetWithoutPermissionViewSet(CommonViewSet):
+    """
+    Common get request not need permissios ViewSet
+
+    put, patch, delete should validate permission
+    """
+
+    def perform_create(self, serializer):
+        return serializer.save()
+
+    def perform_update(self, serializer):
+        return serializer.save()
+
+    @wrap_permission(AllowAny)
+    def list(self, request, *args, **kwargs):
+        return super(GetWithoutPermissionViewSet, self).list(request, *args, **kwargs)
+
+    @wrap_permission(AllowAny)
+    def retrieve(self, request, *args, **kwargs):
+        return super(GetWithoutPermissionViewSet, self).retrieve(request, *args, **kwargs)
+
+    @wrap_permission(IsVbAdminUser)
+    def create(self, request, *args, **kwargs):
+        return super(GetWithoutPermissionViewSet, self).create(request, *args, **kwargs)
+
+    @wrap_permission(IsVbAdminUser)
+    def update(self, request, *args, **kwargs):
+        return super(GetWithoutPermissionViewSet, self).update(request, *args, **kwargs)
+
+    @wrap_permission(IsVbAdminUser)
+    def destroy(self, request, *args, **kwargs):
+        return super(GetWithoutPermissionViewSet, self).destroy(request, *args, **kwargs)
